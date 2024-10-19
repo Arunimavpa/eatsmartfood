@@ -16,22 +16,72 @@ if (isset($_REQUEST['id'])) {
     exit;
 }
 
-// Add items to cart
-if (isset($_POST['add_to_cart'])) {
+// Handle AJAX requests for cart operations
+if (isset($_POST['action']) && $_POST['action'] == 'update_cart') {
     $food_id = $_POST['food_id'];
     $food_name = $_POST['food_name'];
-    $quantity = $_POST['quantity'];
     $price = $_POST['price'];
+    $quantity = $_POST['quantity'];
 
-    // Store item in cart session
-    $_SESSION['cart'][] = [
+    // Update the cart
+    $_SESSION['cart'][$food_id] = [
         'food_id' => $food_id,
         'food_name' => $food_name,
         'quantity' => $quantity,
         'price' => $price
     ];
 
-    echo '<script>alert("Item added to cart!");</script>';
+    // If quantity is zero, remove the item from the cart
+    if ($quantity == 0) {
+        unset($_SESSION['cart'][$food_id]);
+    }
+
+    // Return updated cart HTML
+    echo generateCartHTML();
+    exit;
+}
+
+// Function to generate cart HTML
+function generateCartHTML() {
+    $total_price = 0;
+    $cart_html = '
+    <table border="0" id="cart">
+        <tr>
+            <th>Food Item</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>';
+
+    if (!empty($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $cart_item) {
+            $item_total = $cart_item['quantity'] * $cart_item['price'];
+            $total_price += $item_total;
+            $cart_html .= '
+            <tr>
+                <td>' . htmlspecialchars($cart_item['food_name']) . '</td>
+                <td>' . $cart_item['quantity'] . '</td>
+                <td>' . $cart_item['price'] . '</td>
+                <td>' . $item_total . '</td>
+                <td>
+                    <button class="remove-item" data-food-id="' . $cart_item['food_id'] . '">Remove</button>
+                </td>
+            </tr>';
+        }
+        $cart_html .= '
+        <tr>
+            <td colspan="3"><strong>Total Price</strong></td>
+            <td><strong>' . $total_price . '</strong></td>
+            <td></td>
+        </tr>';
+    } else {
+        $cart_html .= '<tr><td colspan="5">Your cart is empty.</td></tr>';
+    }
+
+    $cart_html .= '</table>';
+
+    return $cart_html;
 }
 ?>
 
@@ -47,6 +97,14 @@ if (isset($_POST['add_to_cart'])) {
     table {
         width: 1050px;
     }
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+    }
+    .quantity-controls button {
+        padding: 5px 10px;
+        margin: 0 5px;
+    }
 </style>
 
 <center>
@@ -57,9 +115,13 @@ if (isset($_POST['add_to_cart'])) {
 
         <?php
         // Query to fetch restaurant details based on the provided 'id'
-        $sql = "SELECT * FROM tblrestaurant WHERE rId='$restaurant_id'";
-        $result = mysqli_query($conn, $sql);
-        if (mysqli_num_rows($result) > 0) {
+        $sql = "SELECT * FROM tblrestaurant WHERE rId=?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $restaurant_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
         ?>
         <table border="0" id="tb">
             <tr>
@@ -70,25 +132,25 @@ if (isset($_POST['add_to_cart'])) {
                 <th>PHONE</th>
                 <th>EMAIL</th>
                 <th>PHOTO</th>
-                <th>report</th>
+                <th>Report</th>
             </tr>
             <?php
-            while ($row = mysqli_fetch_array($result)) {
+            while ($row = $result->fetch_assoc()) {
             ?>
             <tr>
-                <td><?php echo $row['rId']; ?></td>
-                <td><?php echo $row['rName']; ?></td>
-                <td><?php echo $row['rLicense']; ?></td>
-                <td><?php echo $row['rAddress']; ?></td>
-                <td><?php echo $row['rContact']; ?></td>
-                <td><?php echo $row['rEmail']; ?></td>
-                <td><img src="<?php echo $row['rImage']; ?>" style="height:150px; width:150px; border-radius:50%;"></td>
-                <td><a href="viewinspectiondetails.php?id=<?php echo $row[0];?>" style="color:black;">Inspection Details</a></td>
+                <td><?php echo htmlspecialchars($row['rId']); ?></td>
+                <td><?php echo htmlspecialchars($row['rName']); ?></td>
+                <td><?php echo htmlspecialchars($row['rLicense']); ?></td>
+                <td><?php echo htmlspecialchars($row['rAddress']); ?></td>
+                <td><?php echo htmlspecialchars($row['rContact']); ?></td>
+                <td><?php echo htmlspecialchars($row['rEmail']); ?></td>
+                <td><img src="<?php echo htmlspecialchars($row['rImage']); ?>" style="height:150px; width:150px; border-radius:50%;"></td>
+                <td><a href="viewinspectiondetails.php?id=<?php echo $row['rId'];?>" style="color:black;">Inspection Details</a></td>
             </tr>
             <?php
             }
-        }
-        ?>
+            }
+            ?>
         </table>
 
         <hr>
@@ -100,37 +162,38 @@ if (isset($_POST['add_to_cart'])) {
                 <th>Price</th>
                 <th>Image</th>
                 <th>Quantity</th>
-                <th>Add to Cart</th>
             </tr>
 
             <?php
             // Query to fetch available food items for the restaurant
-            $food_query = "SELECT * FROM tblfooditems WHERE rId='$restaurant_id'";
-            $food_result = mysqli_query($conn, $food_query);
+            $food_query = "SELECT * FROM tblfooditems WHERE rId=?";
+            $stmt = $conn->prepare($food_query);
+            $stmt->bind_param("i", $restaurant_id);
+            $stmt->execute();
+            $food_result = $stmt->get_result();
             
-            if (mysqli_num_rows($food_result) > 0) {
-                while ($food = mysqli_fetch_array($food_result)) {
+            if ($food_result->num_rows > 0) {
+                while ($food = $food_result->fetch_assoc()) {
+                    $food_id = $food['food_id'];
+                    $quantity_in_cart = isset($_SESSION['cart'][$food_id]) ? $_SESSION['cart'][$food_id]['quantity'] : 0;
             ?>
             <tr>
-                <td><?php echo $food['food_name']; ?></td>
-                <td><?php echo $food['description']; ?></td>
-                <td><?php echo $food['price']; ?></td>
-                <td><img src="<?php echo $food['food_image']; ?>" style="height:100px; width:100px; border-radius:10%;"></td>
+                <td><?php echo htmlspecialchars($food['food_name']); ?></td>
+                <td><?php echo htmlspecialchars($food['description']); ?></td>
+                <td><?php echo htmlspecialchars($food['price']); ?></td>
+                <td><img src="<?php echo htmlspecialchars($food['food_image']); ?>" style="height:100px; width:100px; border-radius:10%;"></td>
                 <td>
-                    <form method="POST"> <!-- Separate form for each item -->
-                        <input type="number" name="quantity" value="1" min="1" required>
-                        <!-- Hidden inputs to send food details -->
-                        <input type="hidden" name="food_id" value="<?php echo $food['food_id']; ?>">
-                        <input type="hidden" name="food_name" value="<?php echo $food['food_name']; ?>">
-                        <input type="hidden" name="price" value="<?php echo $food['price']; ?>">
-                        <input type="submit" name="add_to_cart" value="Add to Cart">
-                    </form>
+                    <div class="quantity-controls">
+                        <button class="decrease-quantity" data-food-id="<?php echo $food_id; ?>" data-food-name="<?php echo htmlspecialchars($food['food_name']); ?>" data-price="<?php echo $food['price']; ?>">−</button>
+                        <span id="quantity-<?php echo $food_id; ?>"><?php echo $quantity_in_cart; ?></span>
+                        <button class="increase-quantity" data-food-id="<?php echo $food_id; ?>" data-food-name="<?php echo htmlspecialchars($food['food_name']); ?>" data-price="<?php echo $food['price']; ?>">＋</button>
+                    </div>
                 </td>
             </tr>
             <?php
                 }
             } else {
-                echo "<tr><td colspan='6'>No food items available.</td></tr>";
+                echo "<tr><td colspan='5'>No food items available.</td></tr>";
             }
             ?>
         </table>
@@ -139,42 +202,14 @@ if (isset($_POST['add_to_cart'])) {
     <!-- Show Cart Section -->
     <div style="margin: 50px;">
         <h2>Your Cart</h2>
-        <form method="POST">
-            <table border="0" id="cart">
-                <tr>
-                    <th>Food Item</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                </tr>
-                <?php
-                $total_price = 0;
-                if (!empty($_SESSION['cart'])) {
-                    foreach ($_SESSION['cart'] as $cart_item) {
-                        $item_total = $cart_item['quantity'] * $cart_item['price'];
-                        $total_price += $item_total;
-                ?>
-                <tr>
-                    <td><?php echo $cart_item['food_name']; ?></td>
-                    <td><?php echo $cart_item['quantity']; ?></td>
-                    <td><?php echo $cart_item['price']; ?></td>
-                    <td><?php echo $item_total; ?></td>
-                </tr>
-                <?php
-                    }
-                } else {
-                    echo "<tr><td colspan='4'>Your cart is empty.</td></tr>";
-                }
-                ?>
-                <tr>
-                    <td colspan="3"><strong>Total Price</strong></td>
-                    <td><strong><?php echo $total_price; ?></strong></td>
-                </tr>
-            </table>
+        <div id="cart-container">
+            <?php echo generateCartHTML(); ?>
+        </div>
 
-            <!-- Checkout form for address -->
-            <?php if (!empty($_SESSION['cart'])) { ?>
-            <h3>Delivery Details</h3>
+        <!-- Checkout form for address -->
+    
+        <h3>Delivery Details</h3>
+        <form method="POST">
             <table>
                 <tr>
                     <td>Name</td>
@@ -203,39 +238,124 @@ if (isset($_POST['add_to_cart'])) {
             </table>
             <br>
             <input type="submit" name="place_order" value="Place Order">
-            <?php } ?>
         </form>
-
-        <?php
-        // Place order functionality
-        if (isset($_POST['place_order'])) {
-            // Gather the delivery details
-            $name = $_POST['name'];
-            $phone_number = $_POST['phone_number'];
-            $street_name = $_POST['street_name'];
-            $city = $_POST['city'];
-            $state = $_POST['state'];
-            $pincode = $_POST['pincode'];
-
-            // Combine the address into a single string
-            $delivery_address = "$name Phone: $phone_number, $street_name, $city, $state, $pincode";
-
-            foreach ($_SESSION['cart'] as $cart_item) {
-                $food_name = $cart_item['food_name'];
-                $quantity = $cart_item['quantity'];
-                $price = $cart_item['price'];
-
-                // Save each item in the order to the tblorders table
-                $order_query = "INSERT INTO tblorders (rId, food_item, quantity, price, delivery_address) 
-                                VALUES ('$restaurant_id', '$food_name', '$quantity', '$price', '$delivery_address')";
-                $order_result = mysqli_query($conn, $order_query);
-            }
-
-            // Clear the cart after order is placed
-            unset($_SESSION['cart']);
-            echo '<script>alert("Order placed successfully!");</script>';
-        }
-        ?>
+        
     </div>
+
+    <?php
+    // Place order functionality
+    if (isset($_POST['place_order'])) {
+        // Gather the delivery details
+        $name = $_POST['name'];
+        $phone_number = $_POST['phone_number'];
+        $street_name = $_POST['street_name'];
+        $city = $_POST['city'];
+        $state = $_POST['state'];
+        $pincode = $_POST['pincode'];
+
+        // Combine the address into a single string
+        $delivery_address = "$name Phone: $phone_number, $street_name, $city, $state, $pincode";
+
+        // Generate a unique order ID
+        $order_id = uniqid();
+
+        // Insert into 'tblorders' using prepared statement
+        $order_query = "INSERT INTO tblorders (order_id, rId, delivery_address) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($order_query);
+        $stmt->bind_param("sis", $order_id, $restaurant_id, $delivery_address);
+        $order_result = $stmt->execute();
+
+        if (!$order_result) {
+            die('Error inserting order: ' . $conn->error);
+        }
+
+        // Insert each item into 'tblorderitems' using prepared statement
+        $item_query = "INSERT INTO tblorderitems (order_id, food_item, quantity, price) VALUES (?, ?, ?, ?)";
+        $stmt = $conn->prepare($item_query);
+
+        foreach ($_SESSION['cart'] as $cart_item) {
+            $food_name = $cart_item['food_name'];
+            $quantity = $cart_item['quantity'];
+            $price = $cart_item['price'];
+
+            $stmt->bind_param("ssii", $order_id, $food_name, $quantity, $price);
+            $item_result = $stmt->execute();
+
+            if (!$item_result) {
+                die('Error inserting order item: ' . $conn->error);
+            }
+        }
+
+        // Clear the cart after order is placed
+        unset($_SESSION['cart']);
+        echo '<script>alert("Order placed successfully!"); window.location.href = window.location.href;</script>';
+    }
+    ?>
 </center>
 
+<!-- JavaScript for handling quantity changes -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('.increase-quantity, .decrease-quantity').click(function(){
+        var button = $(this);
+        var food_id = button.data('food-id');
+        var food_name = button.data('food-name');
+        var price = button.data('price');
+        var quantity_span = $('#quantity-' + food_id);
+        var current_quantity = parseInt(quantity_span.text());
+
+        if (button.hasClass('increase-quantity')) {
+            current_quantity += 1;
+        } else {
+            if (current_quantity > 0) {
+                current_quantity -= 1;
+            }
+        }
+
+        // Update the quantity display
+        quantity_span.text(current_quantity);
+
+        // Update the cart via AJAX
+        $.ajax({
+            type: 'POST',
+            url: '',  // Current page
+            data: {
+                action: 'update_cart',
+                food_id: food_id,
+                food_name: food_name,
+                price: price,
+                quantity: current_quantity
+            },
+            success: function(response) {
+                // Update the cart HTML
+                $('#cart-container').html(response);
+                location.reload();
+            }
+        });
+    });
+
+    // Remove item from cart
+    $(document).on('click', '.remove-item', function(){
+        var button = $(this);
+        var food_id = button.data('food-id');
+
+        // Set quantity to zero to remove the item
+        $.ajax({
+            type: 'POST',
+            url: '',  // Current page
+            data: {
+                action: 'update_cart',
+                food_id: food_id,
+                quantity: 0
+            },
+            success: function(response) {
+                // Update the cart HTML and quantity display
+                $('#cart-container').html(response);
+                $('#quantity-' + food_id).text('0');
+                location.reload();
+            }
+        });
+    });
+});
+</script>

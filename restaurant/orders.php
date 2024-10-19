@@ -15,11 +15,23 @@ if (isset($_POST['mark_as_delivered'])) {
 }
 
 // Fetch pending orders grouped by order_id
-$pending_orders_query = "SELECT * FROM tblorders WHERE rId='$restaurant_id' AND status='pending' ORDER BY order_id DESC";
+$pending_orders_query = "
+    SELECT tblorders.order_id, tblorders.delivery_address, tblorders.order_date, 
+           tblorderitems.food_item, tblorderitems.quantity, tblorderitems.price 
+    FROM tblorders 
+    JOIN tblorderitems ON tblorders.order_id = tblorderitems.order_id 
+    WHERE tblorders.rId = '$restaurant_id' AND tblorders.status = 'pending' 
+    ORDER BY tblorders.order_id DESC";
 $pending_orders_result = mysqli_query($conn, $pending_orders_query);
 
 // Fetch delivered orders grouped by order_id
-$delivered_orders_query = "SELECT * FROM tblorders WHERE rId='$restaurant_id' AND status='delivered' ORDER BY order_id DESC";
+$delivered_orders_query = "
+    SELECT tblorders.order_id, tblorders.delivery_address, tblorders.order_date, 
+           tblorderitems.food_item, tblorderitems.quantity, tblorderitems.price 
+    FROM tblorders 
+    JOIN tblorderitems ON tblorders.order_id = tblorderitems.order_id 
+    WHERE tblorders.rId = '$restaurant_id' AND tblorders.status = 'delivered' 
+    ORDER BY tblorders.order_id DESC";
 $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
 ?>
 
@@ -50,10 +62,9 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
         <table>
             <tr>
                 <th>Order ID</th>
-                <th>Food Items</th>
-                <th>Quantity</th>
                 <th>Delivery Address</th>
                 <th>Order Date</th>
+                <th>Food Items</th>
                 <th>Total Price</th>
                 <th>Action</th>
             </tr>
@@ -61,50 +72,56 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
             <?php
             $current_order_id = null;
             $total_price = 0;
+            $food_items_list = '';  // To store food items for the current order
 
-            while ($order = mysqli_fetch_assoc($pending_orders_result)) {
-                if ($order['order_id'] !== $current_order_id) {
-                    // Close previous order row if applicable
-                    if ($current_order_id !== null) {
-                        echo "<td>$total_price</td>
-                              <td>
-                                  <form method='POST'>
-                                      <input type='hidden' name='order_id' value='{$current_order_id}'>
-                                      <input type='submit' name='mark_as_delivered' value='Mark as Delivered'>
-                                  </form>
-                              </td>
-                              </tr>";
+            if (mysqli_num_rows($pending_orders_result) > 0) {
+                while ($order = mysqli_fetch_assoc($pending_orders_result)) {
+                    // If this is a new order, print its details
+                    if ($order['order_id'] !== $current_order_id) {
+                        // Close the previous order row, if applicable
+                        if ($current_order_id !== null) {
+                            echo "<td>$food_items_list</td>
+                                  <td>$total_price</td>
+                                  <td>
+                                      <form method='POST'>
+                                          <input type='hidden' name='order_id' value='{$current_order_id}'>
+                                          <input type='submit' name='mark_as_delivered' value='Mark as Delivered'>
+                                      </form>
+                                  </td>
+                                  </tr>";
+                        }
+
+                        // Start a new order row
+                        $current_order_id = $order['order_id'];
+                        $food_items_list = '';  // Reset the food items list
+                        $total_price = 0;
+
+                        echo "<tr>";
+                        echo "<td>{$order['order_id']}</td>";
+                        // We will append all food items here later
+                        echo "<td>{$order['delivery_address']}</td>";
+                        echo "<td>{$order['order_date']}</td>";
                     }
 
-                    // Start a new order row
-                    $current_order_id = $order['order_id'];
-                    $food_items = $order['food_item'];
-                    $total_price = $order['price'] * $order['quantity'];
-
-                    echo "<tr>";
-                    echo "<td>{$current_order_id}</td>";
-                    echo "<td>{$food_items}</td>";
-                } else {
-                    // Append food items for the same order
-                    $food_items .= "<br>{$order['food_item']}";
+                    // Append food item to the food items list
+                    $food_items_list .= "{$order['food_item']} ({$order['quantity']}), ";
+                    
+                    // Calculate the total price for this order
+                    $total_price += $order['quantity'] * $order['price'];
                 }
 
-                // Display quantity and other details
-                echo "<td>{$order['quantity']}</td>";
-                echo "<td>{$order['delivery_address']}</td>";
-                echo "<td>{$order['order_date']}</td>";
-            }
-
-            // Close the final order row
-            if ($current_order_id !== null) {
-                echo "<td>$total_price</td>
-                      <td>
-                          <form method='POST'>
-                              <input type='hidden' name='order_id' value='{$current_order_id}'>
-                              <input type='submit' name='mark_as_delivered' value='Mark as Delivered'>
-                          </form>
-                      </td>
-                      </tr>";
+                // Close the final order row
+                if ($current_order_id !== null) {
+                    echo "<td>$food_items_list</td>
+                          <td>$total_price</td>
+                          <td>
+                              <form method='POST'>
+                                  <input type='hidden' name='order_id' value='{$current_order_id}'>
+                                  <input type='submit' name='mark_as_delivered' value='Mark as Delivered'>
+                              </form>
+                          </td>
+                          </tr>";
+                }
             } else {
                 echo "<tr><td colspan='7'>No pending orders</td></tr>";
             }
@@ -120,47 +137,50 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
         <table>
             <tr>
                 <th>Order ID</th>
-                <th>Food Items</th>
-                <th>Quantity</th>
                 <th>Delivery Address</th>
                 <th>Order Date</th>
+                <th>Food Items</th>
                 <th>Total Price</th>
-                <th>Status</th>
+                <th>Action</th>
             </tr>
 
             <?php
             $current_order_id = null;
             $total_price = 0;
+            $food_items_list = '';  // To store food items for the current order
 
-            while ($order = mysqli_fetch_assoc($delivered_orders_result)) {
-                if ($order['order_id'] !== $current_order_id) {
-                    // Close previous order row if applicable
-                    if ($current_order_id !== null) {
-                        echo "<td>$total_price</td><td>Delivered</td></tr>";
+            if (mysqli_num_rows($delivered_orders_result) > 0) {
+                while ($order = mysqli_fetch_assoc($delivered_orders_result)) {
+                    // If this is a new order, print its details
+                    if ($order['order_id'] !== $current_order_id) {
+                        // Close the previous order row, if applicable
+                        if ($current_order_id !== null) {
+                            echo "<td>$food_items_list</td><td>$total_price</td><td>Delivered</td></tr>";
+                        }
+
+                        // Start a new order row
+                        $current_order_id = $order['order_id'];
+                        $food_items_list = '';  // Reset the food items list
+                        $total_price = 0;
+
+                        echo "<tr>";
+                        echo "<td>{$order['order_id']}</td>";
+                        // We will append all food items here later
+                        echo "<td>{$order['delivery_address']}</td>";
+                        echo "<td>{$order['order_date']}</td>";
                     }
 
-                    // Start a new order row
-                    $current_order_id = $order['order_id'];
-                    $food_items = $order['food_item'];
-                    $total_price = $order['price'] * $order['quantity'];
-
-                    echo "<tr>";
-                    echo "<td>{$current_order_id}</td>";
-                    echo "<td>{$food_items}</td>";
-                } else {
-                    // Append food items for the same order
-                    $food_items .= "<br>{$order['food_item']}";
+                    // Append food item to the food items list
+                    $food_items_list .= "{$order['food_item']} ({$order['quantity']}), ";
+                    
+                    // Calculate the total price for this order
+                    $total_price += $order['quantity'] * $order['price'];
                 }
 
-                // Display quantity and other details
-                echo "<td>{$order['quantity']}</td>";
-                echo "<td>{$order['delivery_address']}</td>";
-                echo "<td>{$order['order_date']}</td>";
-            }
-
-            // Close the final order row
-            if ($current_order_id !== null) {
-                echo "<td>$total_price</td><td>Delivered</td></tr>";
+                // Close the final order row
+                if ($current_order_id !== null) {
+                    echo "<td>$food_items_list</td><td>$total_price</td><td>Delivered</td></tr>";
+                }
             } else {
                 echo "<tr><td colspan='7'>No delivered orders</td></tr>";
             }
