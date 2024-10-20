@@ -259,32 +259,15 @@ function generateCartHTML() {
         // Generate a unique order ID
         $order_id = uniqid();
 
-        // Insert into 'tblorders' using prepared statement
-        $order_query = "INSERT INTO tblorders (order_id, rId, delivery_address) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($order_query);
-        $stmt->bind_param("sis", $order_id, $restaurant_id, $delivery_address);
-        $order_result = $stmt->execute();
+        // Save the order details temporarily in the session
+        $_SESSION['order_id'] = $order_id;
+        $_SESSION['delivery_address'] = $delivery_address;
+        $_SESSION['restaurant_id'] = $restaurant_id;
 
-        if (!$order_result) {
-            die('Error inserting order: ' . $conn->error);
-        }
-
-        // Insert each item into 'tblorderitems' using prepared statement
-        $item_query = "INSERT INTO tblorderitems (order_id, food_item, quantity, price) VALUES (?, ?, ?, ?)";
-        $stmt = $conn->prepare($item_query);
-
-        foreach ($_SESSION['cart'] as $cart_item) {
-            $food_name = $cart_item['food_name'];
-            $quantity = $cart_item['quantity'];
-            $price = $cart_item['price'];
-
-            $stmt->bind_param("ssii", $order_id, $food_name, $quantity, $price);
-            $item_result = $stmt->execute();
-
-            if (!$item_result) {
-                die('Error inserting order item: ' . $conn->error);
-            }
-        }
+        // Redirect to the mock payment page
+        echo '<script>window.location.href="payment/mock_payment.php";</script>';
+        exit;
+    
 
         // Clear the cart after order is placed
         unset($_SESSION['cart']);
