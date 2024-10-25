@@ -87,15 +87,26 @@ function generateCartHTML() {
 
 <!-- CSS styling for table and container -->
 <style>
+    
     th, td {
         padding: 10px;
+color:#2a0b30;
+
+        
     }
     th {
-        background-color: brown;
+        background-color:#79f9a4;
         color: white;
+    }
+    h2
+    {
+        
+        color:#779bd3 ;
+     
     }
     table {
         width: 1050px;
+       
     }
     .quantity-controls {
         display: flex;
@@ -105,11 +116,48 @@ function generateCartHTML() {
         padding: 5px 10px;
         margin: 0 5px;
     }
+  
+    .card {
+        background-color: #f8f9fa;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        width: 60%;  /* Adjust width */
+        margin: 30px auto;  /* Center align */
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    h3 {
+        color: #2a0b30;
+        font-weight: bold;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    @media (max-width: 768px) {
+        .card {
+            width: 90%;  /* Make it responsive */
+        }
+    }
+
+
 </style>
 
 <center>
     <div style="margin: 50px;">
         <hr>
+        
         <h2 style="margin: 10px;">Restaurant Details</h2>
         <hr>
 
@@ -125,20 +173,21 @@ function generateCartHTML() {
         ?>
         <table border="0" id="tb">
             <tr>
-                <th>ID</th>
+                
                 <th>NAME</th>
                 <th>LICENSE NO</th>
                 <th>ADDRESS</th>
                 <th>PHONE</th>
                 <th>EMAIL</th>
                 <th>PHOTO</th>
-                <th>Report</th>
+                <th>REPORT</th>
+                <th>FEEDBACK</th>
             </tr>
             <?php
             while ($row = $result->fetch_assoc()) {
             ?>
             <tr>
-                <td><?php echo htmlspecialchars($row['rId']); ?></td>
+                
                 <td><?php echo htmlspecialchars($row['rName']); ?></td>
                 <td><?php echo htmlspecialchars($row['rLicense']); ?></td>
                 <td><?php echo htmlspecialchars($row['rAddress']); ?></td>
@@ -146,6 +195,7 @@ function generateCartHTML() {
                 <td><?php echo htmlspecialchars($row['rEmail']); ?></td>
                 <td><img src="<?php echo htmlspecialchars($row['rImage']); ?>" style="height:150px; width:150px; border-radius:50%;"></td>
                 <td><a href="viewinspectiondetails.php?id=<?php echo $row['rId'];?>" style="color:black;">Inspection Details</a></td>
+                <td><a href="viewuserfeedback.php?id=<?php echo $row['rId'];?>" style="color:black;">Feedback</a></td>
             </tr>
             <?php
             }
@@ -208,39 +258,58 @@ function generateCartHTML() {
 
         <!-- Checkout form for address -->
     
-        <h3>Delivery Details</h3>
-        <form method="POST">
-            <table>
-                <tr>
-                    <td>Name</td>
-                    <td><input type="text" name="name" required></td>
-                </tr>
-                <tr>
-                    <td>Phone Number</td>
-                    <td><input type="text" name="phone_number" pattern="[0-9]{10}" required></td>
-                </tr>
-                <tr>
-                    <td>Street Name</td>
-                    <td><input type="text" name="street_name" required></td>
-                </tr>
-                <tr>
-                    <td>City</td>
-                    <td><input type="text" name="city" required></td>
-                </tr>
-                <tr>
-                    <td>State</td>
-                    <td><input type="text" name="state" required></td>
-                </tr>
-                <tr>
-                    <td>Pincode</td>
-                    <td><input type="text" name="pincode" pattern="[0-9]{6}" required></td>
-                </tr>
-            </table>
-            <br>
-            <input type="submit" name="place_order" value="Place Order">
-        </form>
-        
-    </div>
+       <!-- Delivery Details Card -->
+<div class="card">
+    <h3 style="text-align: center; margin-bottom: 20px;">Delivery Details</h3>
+    <form method="POST">
+        <div class="form-group row">
+            <label for="name" class="col-sm-4 col-form-label">Name</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="phone_number" class="col-sm-4 col-form-label">Phone Number</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" id="phone_number" name="phone_number" pattern="[0-9]{10}" required>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="street_name" class="col-sm-4 col-form-label">Street Name</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" id="street_name" name="street_name" required>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="city" class="col-sm-4 col-form-label">City</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" id="city" name="city" required>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="state" class="col-sm-4 col-form-label">State</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" id="state" name="state" required>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="pincode" class="col-sm-4 col-form-label">Pincode</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" id="pincode" name="pincode" pattern="[0-9]{6}" required>
+            </div>
+        </div>
+
+        <div class="text-center" style="margin-top: 20px;">
+            <button type="submit" name="place_order" class="btn btn-success btn-block">Place Order</button>
+        </div>
+    </form>
+</div>
+
 
     <?php
     // Place order functionality

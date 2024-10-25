@@ -35,7 +35,7 @@ include '../connection.php';
                 if (mysqli_num_rows($result) > 0) {
                 ?>
                     <tr>
-                        <th>ID</th>
+                        
                         <th>FOOD INSPECTOR</th>
                         <th>RESTAURANT</th>
                         <th>INSPECTION DATE</th>
@@ -46,7 +46,7 @@ include '../connection.php';
                     while ($row = mysqli_fetch_array($result)) {
                     ?>
                         <tr>
-                            <td><?php echo $row['inspId']; ?></td>
+                            
                             <td><?php echo $row['iName']; ?></td>
                             <td><?php echo $row['rName']; ?></td>
                             <td><?php echo $row['inspDate']; ?></td>

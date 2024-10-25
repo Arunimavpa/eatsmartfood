@@ -36,9 +36,13 @@ if (isset($_POST['submit_payment'])) {
     <title>Mock Payment</title>
     <link rel="stylesheet" href="../css/bootstrap.css"> <!-- Bootstrap for styling -->
     <style>
+
+      
         body {
             background-color: #f8f9fa;
             font-family: Arial, sans-serif;
+            justify-content: center;
+            display: flex;
         }
         .container {
             margin-top: 100px;
@@ -88,7 +92,7 @@ if (isset($_POST['submit_payment'])) {
 </head>
 <body>
     <div class="container">
-        <h2>Mock Payment Page</h2>
+        <h2>Payment Page</h2>
         <form method="POST" id="paymentForm">
             <div class="payment-method">
                 <h4>Select Payment Method</h4>

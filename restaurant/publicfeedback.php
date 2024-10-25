@@ -12,7 +12,7 @@ include '../connection.php';
     }
 
     th {
-        background-color: #36d65f;
+        background-color: brown;
         color: white;
     }
 
@@ -63,7 +63,41 @@ include '../connection.php';
         <br><br><br>
         <hr>
 
-        
+        <!-- Feedback Table -->
+        <h2 style="margin: 10px;">Submitted Feedbacks</h2>
+        <table border="0" id="tbl">
+            <tr>
+                <th>ID</th>
+                <th>DATE</th>
+                <th>RESTAURANT</th>
+                <th>FEEDBACK</th>
+                <th>REPLY</th>
+            </tr>
+
+            
+            <?php
+            // Fetch feedback and replies from the database
+            $sql = "SELECT f.fId, f.fDate, f.feedback, r.reply,t.rName 
+                    FROM tblfeedback f 
+                    LEFT JOIN tblreply r ON f.fId = r.fId
+                    INNER JOIN tblrestaurant t ON f.rId = t.rId";
+            $result = mysqli_query($conn, $sql);
+
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
+                    echo "<tr>
+                            <td>{$row['fId']}</td>
+                            <td>{$row['fDate']}</td>
+                            <td>{$row['rName']}</td>
+                            <td>{$row['feedback']}</td>
+                            <td>{$row['reply']}</td>
+                          </tr>";
+                }
+            } else {
+                echo "<tr><td colspan='4'>No feedback available.</td></tr>";
+            }
+            ?>
+        </table>
     </div>
 </center>
 

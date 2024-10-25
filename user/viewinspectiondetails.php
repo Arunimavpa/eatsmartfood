@@ -13,8 +13,11 @@ $id = mysqli_real_escape_string($conn, $id);
     }
 
     th {
-        background-color: brown;
+        background-color: #35d578 ;
         color: white;
+    }
+    h2{
+        color: #033002 ; 
     }
     table {
         width: 1050px;
@@ -40,20 +43,17 @@ $id = mysqli_real_escape_string($conn, $id);
         ?>
                 <table border="0" id="tb">
                     <tr>
-                        <th>ID</th>
-                        <th>Date of Inspection</th>
-                       
-                        <th>Report</th>
+                       <th>Date of Inspection</th>
+                       <th>Report</th>
                         <th>Rating</th>
                     </tr>
                     <?php
                     while ($row = mysqli_fetch_array($result)) {
                     ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($row['inspId']); ?></td>
+                            
                             <td><?php echo htmlspecialchars($row['inspDate']); ?></td>
-           
-                            <td><?php echo htmlspecialchars($row['report']); ?></td>
+    <td><?php echo htmlspecialchars($row['report']); ?></td>
                             <td><?php echo htmlspecialchars($row['rating']); ?></td>
                         </tr>
                     <?php

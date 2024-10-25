@@ -36,16 +36,17 @@ $id=$_SESSION['id'];
                 <hr>
                 <table border="0" id="tbl">
                     <tr>
-                        <th>ID</th>
+                        
                         <th>DATE</th>
                         <th>RESTAURANT</th>
-                        <th colspan="2">NOTIFIATION</th>
+                        </th>REQUEST</th>
+                        <th>REPORT DETAILS</th>
                     </tr>
                     <?php
                     while ($row = mysqli_fetch_array($result)) {
                     ?>
                         <tr>
-                            <td><?php echo $row['inspId'] ?></td>
+                            
                             <td><?php echo $row['inspDate'] ?></td>
                             <td><?php echo $row['rName'] ?></td>
                             <td><?php echo $row['inspRequest'] ?></td>

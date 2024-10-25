@@ -69,26 +69,6 @@ if (!$result) {
         </div>
 
         <!-- Main container for displaying content -->
-        <div class="container-fluid mainCon">
-            <?php
-            // Check if the query returned any results
-            if ($result && mysqli_num_rows($result) > 0) {
-                // Fetch each row and display the data
-                while ($q = mysqli_fetch_array($result)) {
-                    ?>
-                    <!-- Display public user or content information here -->
-                    <div class='content card'>
-                      
-                        <h2><?php echo $q['pName']; ?></h2>
-                        <p>Email: <?php echo $q['pEmail']; ?></p>
-                        <p>Address: <?php echo $q['pAddress']; ?></p>
-                    </div>
-                    <?php
-                }
-            } else {
-                echo "<p>No data available for this user.</p>";
-            }
-            ?>
-        </div>
+      
     </center>
 </body>
