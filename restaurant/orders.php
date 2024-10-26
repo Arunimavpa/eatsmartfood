@@ -15,7 +15,7 @@ if (isset($_POST['mark_as_delivered'])) {
 // Fetch orders
 $pending_orders_query = "
     SELECT tblorders.order_id, tblorders.delivery_address, tblorders.order_date, 
-           tblorderitems.food_item, tblorderitems.quantity, tblorderitems.price 
+           tblorderitems.food_item, tblorderitems.quantity, tblorderitems.price ,tblorders.payment_status 
     FROM tblorders 
     JOIN tblorderitems ON tblorders.order_id = tblorderitems.order_id 
     WHERE tblorders.rId = '$id' AND tblorders.status = 'pending' 
@@ -24,7 +24,7 @@ $pending_orders_result = mysqli_query($conn, $pending_orders_query);
 
 $delivered_orders_query = "
     SELECT tblorders.order_id, tblorders.delivery_address, tblorders.order_date, 
-           tblorderitems.food_item, tblorderitems.quantity, tblorderitems.price 
+           tblorderitems.food_item, tblorderitems.quantity, tblorderitems.price ,tblorders.payment_status 
     FROM tblorders 
     JOIN tblorderitems ON tblorders.order_id = tblorderitems.order_id 
     WHERE tblorders.rId = '$id' AND tblorders.status = 'delivered' 
@@ -138,6 +138,7 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
                         <th>Order Date</th>
                         <th>Food Items</th>
                         <th>Total Price</th>
+                        <th>Payment Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -171,10 +172,12 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
                             }
                             $food_items_list .= "{$order['food_item']} ({$order['quantity']}), ";
                             $total_price += $order['quantity'] * $order['price'];
+                            $payment_status = $order['payment_status'];
                         }
                         if ($current_order_id !== null) {
                             echo "<td>$food_items_list</td>
                                   <td>$total_price</td>
+                                  <td>$payment_status</td>
                                   <td>
                                       <form method='POST'>
                                           <input type='hidden' name='order_id' value='{$current_order_id}'>
@@ -202,6 +205,7 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
                         <th>Order Date</th>
                         <th>Food Items</th>
                         <th>Total Price</th>
+                        <th>Payment Status</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -215,7 +219,9 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
                         while ($order = mysqli_fetch_assoc($delivered_orders_result)) {
                             if ($order['order_id'] !== $current_order_id) {
                                 if ($current_order_id !== null) {
-                                    echo "<td>$food_items_list</td><td>$total_price</td><td>Delivered</td></tr>";
+                                    echo "<td>$food_items_list</td>
+                                    <td>$payment_status</td>
+                                    <td>$total_price</td><td>Delivered</td></tr>";
                                 }
                                 $current_order_id = $order['order_id'];
                                 $food_items_list = '';
@@ -227,8 +233,10 @@ $delivered_orders_result = mysqli_query($conn, $delivered_orders_query);
                             }
                             $food_items_list .= "{$order['food_item']} ({$order['quantity']}), ";
                             $total_price += $order['quantity'] * $order['price'];
+                            $payment_status = $order['payment_status'];
                         }
                         if ($current_order_id !== null) {
+                            
                             echo "<td>$food_items_list</td><td>$total_price</td><td>Delivered</td></tr>";
                         }
                     } else {

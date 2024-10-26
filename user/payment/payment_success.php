@@ -12,39 +12,55 @@ $order_id = $_SESSION['order_id'];
 $restaurant_id = $_SESSION['restaurant_id'];
 $delivery_address = $_SESSION['delivery_address'];
 
-// Insert the order into 'tblorders'
-$order_query = "INSERT INTO tblorders (order_id, rId, delivery_address) VALUES (?, ?, ?)";
-$stmt = $conn->prepare($order_query);
-$stmt->bind_param("sis", $order_id, $restaurant_id, $delivery_address);
-$order_result = $stmt->execute();
+// Start a transaction to ensure data consistency
+$conn->begin_transaction();
 
-if (!$order_result) {
-    die('Error inserting order: ' . $conn->error);
-}
+try {
+    // Insert the order into 'tblorders'
+    $order_query = "INSERT INTO tblorders (order_id, rId, delivery_address, payment_status) VALUES (?, ?, ?, 'Paid')";
+    $stmt = $conn->prepare($order_query);
+    $stmt->bind_param("sis", $order_id, $restaurant_id, $delivery_address);
+    $order_result = $stmt->execute();
 
-// Insert each item into 'tblorderitems'
-$item_query = "INSERT INTO tblorderitems (order_id, food_item, quantity, price) VALUES (?, ?, ?, ?)";
-$stmt = $conn->prepare($item_query);
-
-foreach ($_SESSION['cart'] as $cart_item) {
-    $food_name = $cart_item['food_name'];
-    $quantity = $cart_item['quantity'];
-    $price = $cart_item['price'];
-
-    $stmt->bind_param("ssii", $order_id, $food_name, $quantity, $price);
-    $item_result = $stmt->execute();
-
-    if (!$item_result) {
-        die('Error inserting order item: ' . $conn->error);
+    if (!$order_result) {
+        throw new Exception('Error inserting order: ' . $conn->error);
     }
+
+    // Insert each item into 'tblorderitems'
+    $item_query = "INSERT INTO tblorderitems (order_id, food_item, quantity, price) VALUES (?, ?, ?, ?)";
+    $stmt = $conn->prepare($item_query);
+
+    foreach ($_SESSION['cart'] as $cart_item) {
+        $food_name = $cart_item['food_name'];
+        $quantity = $cart_item['quantity'];
+        $price = $cart_item['price'];
+
+        $stmt->bind_param("ssii", $order_id, $food_name, $quantity, $price);
+        $item_result = $stmt->execute();
+
+        if (!$item_result) {
+            throw new Exception('Error inserting order item: ' . $conn->error);
+        }
+    }
+
+    // Commit the transaction
+    $conn->commit();
+
+    // Clear the session variables and cart
+    unset($_SESSION['cart']);
+    unset($_SESSION['order_id']);
+    unset($_SESSION['delivery_address']);
+    unset($_SESSION['restaurant_id']);
+
+} catch (Exception $e) {
+    // Rollback the transaction if any query fails
+    $conn->rollback();
+    die($e->getMessage());
 }
 
-// Clear the session variables and cart
-unset($_SESSION['cart']);
-unset($_SESSION['order_id']);
-unset($_SESSION['delivery_address']);
-unset($_SESSION['restaurant_id']);
-
+// Close the statement
+$stmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -131,6 +147,7 @@ unset($_SESSION['restaurant_id']);
             <p><strong>Order ID:</strong> <?php echo htmlspecialchars($order_id); ?></p>
             <p><strong>Delivery Address:</strong> <?php echo htmlspecialchars($delivery_address); ?></p>
             <p><strong>Restaurant ID:</strong> <?php echo htmlspecialchars($restaurant_id); ?></p>
+            <p><strong>Payment Status:</strong> Paid</p> <!-- Display the payment status -->
         </div>
 
         <div>
