@@ -112,7 +112,11 @@ $id = $_SESSION['id'];
                                     <a href="fireport.php?id=<?php echo $row['inspId']; ?>" class="btn-report">
                                         Add Report
                                     </a>
-                                <?php } ?>
+                                <?php } else { ?>
+                                    <a href="inspected.php?id=<?php echo $row['inspId']; ?>" class="btn-inspected">
+                                       Inspection Completed, View Inspection
+                                    </a>
+                            <?php } ?>
                             </td>
                         </tr>
                         <?php } ?>

@@ -102,8 +102,10 @@ $inspId = $_GET['id'];
                         <th>Report Date</th>
                         <th>Report</th>
                         <th>Rating</th>
+                        <th>Show Report File</th>
                         <th>Fine</th>
                         <th>Actions</th>
+
                     </tr>
                 </thead>
                 <tbody>
@@ -118,6 +120,7 @@ $inspId = $_GET['id'];
                         <td><?php echo htmlspecialchars($row['repDate']); ?></td>
                         <td><?php echo htmlspecialchars($row['report']); ?></td>
                         <td><?php echo htmlspecialchars($row['rating']); ?></td>
+                        <td><a href="view_report_file.php?id=<?php echo $row['repId']; ?>" class="btn-show-file"> Show Report File</a></td>
                         <?php
                         $sq = "SELECT status, amt FROM tblpenalty WHERE repId = '{$row['repId']}'";
                         $qs = mysqli_query($conn, $sq);
