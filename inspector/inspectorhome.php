@@ -4,8 +4,7 @@ include 'fibase.html';
 include '../connection.php';
 ?>
 <style>
-    th,
-    td {
+    th, td {
         padding: 10px;
     }
 </style>
@@ -13,7 +12,13 @@ include '../connection.php';
 <center>
     <div style="margin: 50px;">
         <hr>
-        <h2 style="margin: 10px;">Welcome</h2>
+        <?php 
+            if (isset($_SESSION['name'])) {
+                echo "<h2>Welcome, {$_SESSION['name']} - {$_SESSION['usertype']}</h2>";
+            } else {
+                echo "<h2>Welcome, Guest</h2>";
+            }
+        ?>
         <hr>
     </div>
 </center>

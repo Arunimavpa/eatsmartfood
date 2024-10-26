@@ -127,6 +127,7 @@ include 'connection.php';
                         $row = mysqli_fetch_array($res);
                         $_SESSION['id'] = $row['iId'];
                         $_SESSION['name'] = $row['iName'];
+                        $_SESSION['usertype'] = 'Inspector'; // Add usertype to session
                         echo '<script>location.href="inspector/inspectorhome.php"</script>';
                     } elseif ($row['usertype'] == 'public') {
                         $qry = "SELECT * FROM tblpublic WHERE pEmail='$email'";

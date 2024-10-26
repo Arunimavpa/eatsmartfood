@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 19, 2024 at 06:29 PM
+-- Generation Time: Oct 26, 2024 at 09:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -65,7 +65,8 @@ INSERT INTO `tblfeedback` (`fId`, `pId`, `rId`, `fDate`, `feedback`, `status`) V
 (2, 1, 1, '2024-10-15 00:12:35', 'good food', 'Submitted'),
 (3, 1, 1, '2024-10-15 00:16:29', 'good food', 'Submitted'),
 (4, 1, 1, '2024-10-15 00:19:06', 'good food', 'Submitted'),
-(5, 1, 2, '2024-10-15 09:18:29', 'good food', 'Submitted');
+(5, 1, 2, '2024-10-15 09:18:29', 'good food', 'Submitted'),
+(6, 0, 2, '2024-10-26 20:13:08', 'Good food ,hygiene kitchen and env\r\n', 'Submitted');
 
 -- --------------------------------------------------------
 
@@ -113,7 +114,7 @@ CREATE TABLE `tblinspection` (
 --
 
 INSERT INTO `tblinspection` (`inspId`, `iId`, `rId`, `inspDate`, `inspRequest`, `status`) VALUES
-(1, 1, 1, '2023-01-09', 'Not clean', 'Completed');
+(5, 1, 2, '2024-10-27', 'i need request', 'Completed');
 
 -- --------------------------------------------------------
 
@@ -213,7 +214,11 @@ INSERT INTO `tblorderitems` (`item_id`, `order_id`, `food_item`, `quantity`, `pr
 (18, '6713ab68310c7', 'Biriyani', 1, 250.00),
 (19, '6713ad88604f1', 'Biriyani', 1, 250.00),
 (20, '6713ad88604f1', 'Masala dosha', 1, 50.00),
-(21, '6713ad88604f1', 'coca cola', 1, 30.00);
+(21, '6713ad88604f1', 'coca cola', 1, 30.00),
+(22, '671d10abe33b1', 'Biriyani', 1, 250.00),
+(23, '671d10abe33b1', 'coca cola', 1, 30.00),
+(24, '671d134947f80', 'Biriyani', 1, 250.00),
+(25, '671d197861d3e', 'coca cola', 1, 30.00);
 
 -- --------------------------------------------------------
 
@@ -226,20 +231,24 @@ CREATE TABLE `tblorders` (
   `rId` int(11) DEFAULT NULL,
   `delivery_address` text DEFAULT NULL,
   `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('pending','delivered') DEFAULT 'pending'
+  `status` enum('pending','delivered') DEFAULT 'pending',
+  `payment_status` varchar(10) DEFAULT 'Unpaid'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tblorders`
 --
 
-INSERT INTO `tblorders` (`order_id`, `rId`, `delivery_address`, `order_date`, `status`) VALUES
-('6713a5f96a7ef', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, Bayern, 521464', '2024-10-19 12:28:41', 'pending'),
-('6713a63b6b942', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521464', '2024-10-19 12:29:47', 'delivered'),
-('6713a6c60065f', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521464', '2024-10-19 12:32:06', 'pending'),
-('6713a7f7623ff', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521463', '2024-10-19 12:37:11', 'delivered'),
-('6713ab68310c7', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521464', '2024-10-19 12:51:52', 'delivered'),
-('6713ad88604f1', 2, 'Maya Phone: 9496170098, Kodungallur, thrissur, kerala, 680664', '2024-10-19 13:00:56', 'pending');
+INSERT INTO `tblorders` (`order_id`, `rId`, `delivery_address`, `order_date`, `status`, `payment_status`) VALUES
+('6713a5f96a7ef', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, Bayern, 521464', '2024-10-19 12:28:41', 'pending', 'Unpaid'),
+('6713a63b6b942', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521464', '2024-10-19 12:29:47', 'delivered', 'Unpaid'),
+('6713a6c60065f', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521464', '2024-10-19 12:32:06', 'pending', 'Unpaid'),
+('6713a7f7623ff', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521463', '2024-10-19 12:37:11', 'delivered', 'Unpaid'),
+('6713ab68310c7', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, NRW, 521464', '2024-10-19 12:51:52', 'delivered', 'Unpaid'),
+('6713ad88604f1', 2, 'Maya Phone: 9496170098, Kodungallur, thrissur, kerala, 680664', '2024-10-19 13:00:56', 'delivered', 'Unpaid'),
+('671d10abe33b1', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, kerala, 521466', '2024-10-26 15:54:25', 'delivered', 'Unpaid'),
+('671d134947f80', 2, 'Athulkrishna Vallomparambath Panikkassery Phone: 1739400822, Kaiserstraße 95-97, Würselen, kerala, 521466', '2024-10-26 16:05:35', 'delivered', 'Paid'),
+('671d197861d3e', 2, 'Maya Phone: 9496170098, Kodungallur, thrissur, kerala, 680664', '2024-10-26 16:31:56', 'delivered', 'Paid');
 
 -- --------------------------------------------------------
 
@@ -260,7 +269,8 @@ CREATE TABLE `tblpenalty` (
 --
 
 INSERT INTO `tblpenalty` (`penaltyId`, `repId`, `duedate`, `amt`, `status`) VALUES
-(1, 1, '2023-01-12', 10000, 'Assigned');
+(1, 1, '2023-01-12', 10000, 'Assigned'),
+(2, 2, '2024-10-28', 200, 'Paid');
 
 -- --------------------------------------------------------
 
@@ -314,15 +324,16 @@ CREATE TABLE `tblresponse` (
   `inspId` int(11) NOT NULL,
   `repDate` date NOT NULL,
   `report` varchar(100) NOT NULL,
-  `rating` float NOT NULL
+  `rating` float NOT NULL,
+  `filePath` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `tblresponse`
 --
 
-INSERT INTO `tblresponse` (`repId`, `inspId`, `repDate`, `report`, `rating`) VALUES
-(1, 1, '2023-01-08', 'kjnkijni', 2);
+INSERT INTO `tblresponse` (`repId`, `inspId`, `repDate`, `report`, `rating`, `filePath`) VALUES
+(6, 5, '2024-10-26', 'good food ', 5, 'uploads/ros.pdf');
 
 -- --------------------------------------------------------
 
@@ -451,7 +462,7 @@ ALTER TABLE `tblblacklist`
 -- AUTO_INCREMENT for table `tblfeedback`
 --
 ALTER TABLE `tblfeedback`
-  MODIFY `fId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `fId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `tblfooditems`
@@ -463,7 +474,7 @@ ALTER TABLE `tblfooditems`
 -- AUTO_INCREMENT for table `tblinspection`
 --
 ALTER TABLE `tblinspection`
-  MODIFY `inspId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `inspId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `tblinspector`
@@ -487,13 +498,13 @@ ALTER TABLE `tblnotification`
 -- AUTO_INCREMENT for table `tblorderitems`
 --
 ALTER TABLE `tblorderitems`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `tblpenalty`
 --
 ALTER TABLE `tblpenalty`
-  MODIFY `penaltyId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `penaltyId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `tblpublic`
@@ -511,7 +522,7 @@ ALTER TABLE `tblreply`
 -- AUTO_INCREMENT for table `tblresponse`
 --
 ALTER TABLE `tblresponse`
-  MODIFY `repId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `repId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `tblrestaurant`

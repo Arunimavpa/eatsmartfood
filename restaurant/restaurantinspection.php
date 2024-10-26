@@ -2,146 +2,226 @@
 session_start();
 include 'restaurantbase.html';
 include '../connection.php';
-$id = $_SESSION['id'];
+
+$id = $_SESSION['id']; // Restaurant ID from session
+$inspId = isset($_GET['id']) ? $_GET['id'] : null; // Get specific inspection ID if provided in URL
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspection Report</title>
+    <title>Inspection Reports</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* Global Styles */
         body {
-            background-color: #eafaf1; /* Light green background */
+            background-color: #eafaf1;
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
         }
 
         h2 {
-            color: #27ae60; /* Green heading */
+            color: #27ae60;
             font-weight: bold;
             text-align: center;
             margin-bottom: 20px;
         }
 
-        /* Table Styles */
         #tbl {
-            width: 90%; /* Wider table */
+            width: 90%;
             margin: 20px auto;
             border-collapse: collapse;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        th {
-            background-color: #27ae60; /* Green header */
-            color: white;
+        th, td {
             padding: 12px;
-            font-weight: bold;
-        }
-
-        td {
-            padding: 12px;
-            text-align: left;
+            text-align: center;
             color: #34495e;
         }
 
+        th {
+            background-color: #27ae60;
+            color: white;
+        }
+
         tr:nth-child(even) {
-            background-color: #f5f5f5; /* Light background */
+            background-color: #f5f5f5;
         }
 
         tr:nth-child(odd) {
-            background-color: #e8f6f3; /* Light blue background */
+            background-color: #e8f6f3;
         }
 
         tr:hover {
-            background-color: rgba(39, 174, 96, 0.2); /* Hover effect */
-            transition: background 0.3s ease;
+            background-color: rgba(39, 174, 96, 0.2);
         }
 
-        a {
-            text-decoration: none;
-            color: #3498db;
+        .btn-action {
+            background-color: #d9534f;
+            color: white;
             font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-decoration: none;
         }
 
-        a:hover {
-            color: #e74c3c;
-        }
-
-        @media (max-width: 768px) {
-            #tbl {
-                width: 100%; /* Responsive adjustment */
-            }
+        .btn-action:hover {
+            background-color: #c9302c;
         }
     </style>
 </head>
-
 <body>
     <center>
         <div style="margin: 50px;">
-            <h2>Inspection Report</h2>
-            <form method="POST" enctype="multipart/form-data">
-                <?php
-                $sql = "SELECT * FROM tblinspection, tblinspector, tblrestaurant, tblresponse, tblblacklist 
-                        WHERE tblinspector.iEmail IN (SELECT username FROM tbllogin WHERE STATUS='1') 
-                        AND tblinspection.iId = tblinspector.iId 
-                        AND tblinspection.rId = tblrestaurant.rId 
-                        AND tblblacklist.repId = tblresponse.repId 
-                        AND tblinspection.inspId = tblresponse.inspId 
-                        AND tblinspection.rId = '$id'";
+            <h2>Inspection Reports</h2>
 
-                $result = mysqli_query($conn, $sql);
-                if (mysqli_num_rows($result) > 0) {
-                ?>
-                    <table id="tbl">
-                        <tr>
-                        <th>FOOD INSPECTOR</th>
-                        <th>INSPECTION DATE</th>
-                        <th>REPORT DATE</th>
-                        <th>REPORT</th>
-                        <th>RATING</th>
-                        <th>ACTION</th>
-                        <th>BLACKLISTED OR NOT</th>
-                        </tr>
-                        <?php
-                    while ($row = mysqli_fetch_array($result)) {
+            <?php
+            // Display the list of inspection reports for the restaurant
+            $sql = "SELECT tblinspector.iName, tblinspection.inspId, tblinspection.inspDate, tblresponse.repDate, 
+                           tblresponse.report, tblresponse.rating, tblresponse.repId, tblblacklist.status AS blacklist_status
+                    FROM tblinspection
+                    INNER JOIN tblinspector ON tblinspection.iId = tblinspector.iId
+                    INNER JOIN tblresponse ON tblinspection.inspId = tblresponse.inspId
+                    LEFT JOIN tblblacklist ON tblblacklist.repId = tblresponse.repId
+                    WHERE tblinspection.rId = ?";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+            ?>
+                <table id="tbl">
+                    <tr>
+                        <th>Food Inspector</th>
+                        <th>Inspection Date</th>
+                        <th>Report Date</th>
+                        <th>Report</th>
+                        <th>Rating</th>
+                        <th>Action</th>
+                        <th>Blacklisted Status</th>
+                        <th>Details</th>
+                    </tr>
+                    <?php
+                    while ($row = $result->fetch_assoc()) {
                     ?>
                         <tr>
-                        
-                            <td><?php echo $row['iName']; ?></td>
-                            
-                            <td><?php echo $row['inspDate']; ?></td>
-                            <td><?php echo $row['repDate']; ?></td>
-                            <td><?php echo $row['report']; ?></td>
-                            <td><?php echo $row['rating']; ?></td>
-                            <?php
-                            if($row['rating']<=2)
-                            {
-                            ?>
-                            <td><a href="restaurantpenalty.php?id=<?php echo $row['repId']; ?>">View penalty</a></td>
-                            <?php
-                            }
-                            if($row['status']=='1'){
-                                ?>
-                            <td>Blacklisted</td>
-                            <?php } ?>
+                            <td><?php echo htmlspecialchars($row['iName']); ?></td>
+                            <td><?php echo htmlspecialchars($row['inspDate']); ?></td>
+                            <td><?php echo htmlspecialchars($row['repDate']); ?></td>
+                            <td><?php echo htmlspecialchars($row['report']); ?></td>
+                            <td><?php echo htmlspecialchars($row['rating']); ?></td>
+                            <td>
+                                <?php if ($row['rating'] <= 2) { ?>
+                                    <a href="restaurantpenalty.php?id=<?php echo htmlspecialchars($row['repId']); ?>" class="btn-action">View Penalty</a>
+                                <?php } ?>
+                            </td>
+                            <td><?php echo $row['blacklist_status'] == '1' ? 'Blacklisted' : 'Not Blacklisted'; ?></td>
+                            <td>
+                                <a href="?id=<?php echo $row['inspId']; ?>" class="btn-action">View Report Details</a>
+                            </td>
                         </tr>
                     <?php } ?>
                 </table>
+            <?php
+            } else {
+                echo '<h3>No inspection reports available.</h3>';
+            }
+
+            $stmt->close();
+            ?>
+
+            <!-- Detailed Inspection Report Section (if inspId is provided) -->
+            <?php if ($inspId): ?>
+                <hr>
+                <h2>Inspection Report Details</h2>
+                <hr>
+                <?php
+                // SQL query to fetch detailed information for a specific inspection
+                $sqlDetail = "SELECT tblinspector.iName, tblrestaurant.rName, tblinspection.inspDate, tblresponse.repDate, 
+                                     tblresponse.report, tblresponse.rating, tblresponse.repId
+                              FROM tblinspection 
+                              JOIN tblinspector ON tblinspection.iId = tblinspector.iId 
+                              JOIN tblrestaurant ON tblinspection.rId = tblrestaurant.rId 
+                              JOIN tblresponse ON tblinspection.inspId = tblresponse.inspId 
+                              WHERE tblinspection.inspId = ?";
+                $stmtDetail = $conn->prepare($sqlDetail);
+                $stmtDetail->bind_param("i", $inspId);
+                $stmtDetail->execute();
+                $resultDetail = $stmtDetail->get_result();
+
+                if ($resultDetail->num_rows > 0) {
+                ?>
+                    <table class="table table-bordered mt-5" id="tbl">
+                        <thead>
+                            <tr>
+                                <th>Food Inspector</th>
+                                <th>Restaurant</th>
+                                <th>Inspection Date</th>
+                                <th>Report Date</th>
+                                <th>Report</th>
+                                <th>Rating</th>
+                                <th>Show Report File</th>
+                                <th>Fine</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = $resultDetail->fetch_assoc()) { ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['iName']); ?></td>
+                                <td><?php echo htmlspecialchars($row['rName']); ?></td>
+                                <td><?php echo htmlspecialchars($row['inspDate']); ?></td>
+                                <td><?php echo htmlspecialchars($row['repDate']); ?></td>
+                                <td><?php echo htmlspecialchars($row['report']); ?></td>
+                                <td><?php echo htmlspecialchars($row['rating']); ?></td>
+                                <td><a href="/eatsmartfood/inspector/view_report_file.php?id=<?php echo $row['repId']; ?>" class="btn-action">Show Report File</a></td>
+                                <?php
+                                // Fetch penalty details
+                                $penaltyQuery = "SELECT status, amt FROM tblpenalty WHERE repId = ?";
+                                $stmtPenalty = $conn->prepare($penaltyQuery);
+                                $stmtPenalty->bind_param("i", $row['repId']);
+                                $stmtPenalty->execute();
+                                $penaltyResult = $stmtPenalty->get_result();
+                                $penalty = $penaltyResult->fetch_assoc();
+
+                                if ($penalty) {
+                                    echo "<td>{$penalty['amt']}</td>";
+                                    if ($penalty['status'] == 'Assigned') {
+                                        echo "<td>
+                                            <a href='incrementpenalty.php?id={$row['repId']}' class='btn-action'>Add Extra Fine</a>
+                                            <a href='penaltypaid.php?id={$row['repId']}' class='btn-action'>Paid</a>
+                                        </td>";
+                                    } else {
+                                        echo "<td>No further actions</td>";
+                                    }
+                                } else {
+                                    echo "<td>No Penalty Assigned</td>";
+                                }
+                                ?>
+                            </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
                 <?php
                 } else {
-                    echo '<h3>No reports available</h3>';
+                    echo '<h3 class="text-center">No detailed report found for this inspection.</h3>';
                 }
+                $stmtDetail->close();
                 ?>
-            </form>
+            <?php endif; ?>
         </div>
     </center>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
