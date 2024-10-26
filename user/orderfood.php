@@ -16,7 +16,6 @@ include '../connection.php';
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* Global Styling */
         body {
             background-color: #f0f4f8;
             font-family: 'Poppins', sans-serif;
@@ -28,7 +27,30 @@ include '../connection.php';
             color: #27ae60;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 20px;
+            margin: 20px 0;
+        }
+
+        .search-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+        }
+
+        .search-bar input {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #27ae60;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .search-bar button {
+            padding: 10px;
+            border: none;
+            background-color: #27ae60;
+            color: white;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
         }
 
         .table-container {
@@ -45,35 +67,22 @@ include '../connection.php';
             border-collapse: collapse;
         }
 
+        th, td {
+            padding: 15px;
+            text-align: center;
+        }
+
         th {
             background-color: #27ae60;
             color: white;
-            font-weight: bold;
-            text-align: center;
-            padding: 15px;
-        }
-
-        td {
-            padding: 15px;
-            text-align: center;
-            color: #34495e;
-            vertical-align: middle;
         }
 
         tr:nth-child(even) {
             background-color: #f8f9fa;
         }
 
-        tr:nth-child(odd) {
-            background-color: #e9f7ef;
-        }
-
         tr:hover {
             background-color: rgba(39, 174, 96, 0.2);
-        }
-
-        a {
-            text-decoration: none;
         }
 
         img {
@@ -92,21 +101,39 @@ include '../connection.php';
             .table-container {
                 width: 95%;
             }
+
+            .search-bar input {
+                width: 200px;
+            }
         }
     </style>
 </head>
 
 <body>
+   
     <center>
+        <h2>Restaurant Details</h2>
+ <!-- Search Bar -->
+    <div class="search-bar">
+        <form method="GET" action="">
+            <input type="text" name="search" placeholder="Search for a restaurant..." 
+                   value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
         <div class="table-container">
-            <h2>Restaurant Details</h2>
             <table border="0">
                 <?php
-                // SQL query to fetch all restaurants
-                $sql = "SELECT * FROM tblrestaurant";
+                $search = isset($_GET['search']) ? $_GET['search'] : '';
+
+                $sql = "SELECT * FROM tblrestaurant 
+                        WHERE rName LIKE '%$search%' 
+                        OR rAddress LIKE '%$search%' 
+                        OR rLicense LIKE '%$search%'";
+
                 $result = mysqli_query($conn, $sql);
 
-                // Check if there are results in the query
                 if (mysqli_num_rows($result) > 0) {
                 ?>
                     <tr>
@@ -119,7 +146,6 @@ include '../connection.php';
                         <th>Photo</th>
                     </tr>
                     <?php
-                    // Loop through each row in the result set
                     while ($row = mysqli_fetch_array($result)) {
                     ?>
                         <tr>
@@ -138,8 +164,7 @@ include '../connection.php';
                     <?php
                     }
                 } else {
-                    // Display a message if no data is available
-                    echo "<tr><td colspan='7'>No restaurants found.</td></tr>";
+                    echo "<tr><td colspan='7'>No restaurants found matching your search.</td></tr>";
                 }
                 ?>
             </table>

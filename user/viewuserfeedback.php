@@ -20,6 +20,9 @@ if (isset($_GET['id'])) {
         background-color:#35d578 ;
         color: white;
     }
+    h2{
+        color: #35d578;
+    }
 
     table {
         width: 1050px;
@@ -34,10 +37,18 @@ if (isset($_GET['id'])) {
 
         <?php
         // Fetch feedback for the specific restaurant using the ID from the URL
-        $sql = "SELECT f.fId, f.fDate, f.feedback, f.status, r.rName 
-                FROM tblfeedback f 
-                INNER JOIN tblrestaurant r ON f.rId = r.rId 
-                WHERE f.rId = ?";
+        $sql = "SELECT f.fId, 
+        DATE_FORMAT(f.fDate, '%Y-%m-%d') AS feedback_date, 
+        DATE_FORMAT(f.fDate, '%H:%i:%s') AS feedback_time, 
+        f.feedback, 
+        r.rName, 
+        rp.reply 
+ FROM tblfeedback f
+ INNER JOIN tblrestaurant r ON f.rId = r.rId
+ LEFT JOIN tblreply rp ON f.fId = rp.fId  -- Link replies to feedback
+ WHERE f.rId = ?";
+
+
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $id);  // Use prepared statements for security
         $stmt->execute();
@@ -48,6 +59,7 @@ if (isset($_GET['id'])) {
         <table border="0" id="tb">
             <tr>
                 <th>Date</th>
+                <th>time</th>
                 <th>Feedback</th>
                 <th>Reply</th>
             </tr>
@@ -56,8 +68,13 @@ if (isset($_GET['id'])) {
             while ($row = $result->fetch_assoc()) {
             ?>
             <tr>
-                <td><?php echo $row['fDate']; ?></td>
+                <td><?php echo $row['feedback_date']; ?></td>
+                <td><?php echo $row['feedback_time']; ?></td>
                 <td><?php echo $row['feedback']; ?></td>
+                <td>
+                <?php 
+                    echo htmlspecialchars($row['reply'] ?? 'No reply yet'); 
+                    ?></td>
             </tr>
             <?php
             }

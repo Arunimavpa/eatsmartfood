@@ -2,60 +2,104 @@
 session_start();
 include 'fibase.html';
 include '../connection.php';
-$id=$_REQUEST['id'];
-// echo $id;
+$id = $_REQUEST['id'];
 ?>
-<style>
-    th,
-    td {
-        padding: 10px;
-    }
 
-    th {
-        background-color: brown;
-        color: white;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extra Penalty</title>
 
-    #tbl {
-        width: 1050px;
-    }
-</style>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-<center>
-    <div style="margin: 50px;">
-        <hr>
-        <h2 style="margin: 10px;">Extra Penalty</h2>
-        <hr>
-        <form method="POST" enctype="multipart/form-data">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-            <table>
-                <tr>
-                    <td>Penalty Fine</td>
-                    <td><input type="number" class="form-control" name="penalty"  required></td>
-                </tr>
-                <tr>
-                    <td>Due date</td>
-                    <td><input type="date" class="form-control" name="date" min="<?php echo date('Y-m-d'); ?>" required></td>
-                </tr>
-                <tr>
-                    <td colspan="2"><input type="submit" name="submit" class="btn btn-danger" style="color: white; width:400px;" value="Submit"></td>
-                </tr>
-            </table>
-        </form>
+        h2 {
+            color: #e18405; /* Burnt Orange */
+            font-weight: bold;
+        }
+
+        .form-container {
+            margin-top: 50px;
+            margin-bottom: 50px;
+            width: 50%;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control {
+            margin-bottom: 15px;
+        }
+
+        .btn-submit {
+            background-color: #d9534f; /* Bootstrap Danger */
+            border: none;
+            width: 100%;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: #c9302c; /* Darker Red */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="form-container">
+            <h2 class="text-center">Extra Penalty</h2>
+            <hr>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="penalty">Penalty Fine</label>
+                    <input type="number" class="form-control" id="penalty" name="penalty" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Due Date</label>
+                    <input type="date" class="form-control" id="date" name="date" 
+                           min="<?php echo date('Y-m-d'); ?>" required>
+                </div>
+
+                <button type="submit" name="submit" class="btn-submit">Submit</button>
+            </form>
+        </div>
     </div>
-</center>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
 <?php
 if (isset($_POST['submit'])) {
     $penalty = $_POST['penalty'];
     $date = $_POST['date'];
 
-    $qry = "update tblpenalty set duedate='$date',amt='$penalty' where repId='$id'";
-    echo $qry;
+    $qry = "UPDATE tblpenalty SET duedate = '$date', amt = '$penalty' WHERE repId = '$id'";
     $res = mysqli_query($conn, $qry);
+
     if ($res) {
-            echo '<script>alert("Penalty updated successfully");location.href="inspected.php";</script>'; 
+        echo '<script>alert("Penalty updated successfully"); location.href="inspected.php";</script>';
     } else {
-        echo '<script>alert("Sorry some error occured");</script>';
+        echo '<script>alert("Sorry, an error occurred.");</script>';
     }
 }
 ?>
