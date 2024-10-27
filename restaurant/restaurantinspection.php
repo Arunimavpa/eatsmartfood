@@ -197,7 +197,7 @@ $inspId = isset($_GET['id']) ? $_GET['id'] : null; // Get specific inspection ID
                                     if ($penalty['status'] == 'Assigned') {
                                         echo "<td>
                                             <a href='incrementpenalty.php?id={$row['repId']}' class='btn-action'>Add Extra Fine</a>
-                                            <a href='penaltypaid.php?id={$row['repId']}' class='btn-action'>Paid</a>
+                                            <a href='penaltypaid.php?id={$row['repId']}' class='btn-action'>Paid</a> //add code for payment her
                                         </td>";
                                     } else {
                                         echo "<td>No further actions</td>";

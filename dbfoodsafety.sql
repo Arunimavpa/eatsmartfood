@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 26, 2024 at 09:15 PM
+-- Generation Time: Oct 27, 2024 at 10:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -114,7 +114,10 @@ CREATE TABLE `tblinspection` (
 --
 
 INSERT INTO `tblinspection` (`inspId`, `iId`, `rId`, `inspDate`, `inspRequest`, `status`) VALUES
-(5, 1, 2, '2024-10-27', 'i need request', 'Completed');
+(5, 1, 2, '2024-10-27', 'i need request', 'Completed'),
+(6, 1, 2, '2024-10-27', 'i need inspection report', 'Completed'),
+(7, 1, 2, '2024-10-30', 'inspection', 'Completed'),
+(8, 1, 2, '2024-10-27', 'inspect the hotel now', 'Completed');
 
 -- --------------------------------------------------------
 
@@ -270,7 +273,8 @@ CREATE TABLE `tblpenalty` (
 
 INSERT INTO `tblpenalty` (`penaltyId`, `repId`, `duedate`, `amt`, `status`) VALUES
 (1, 1, '2023-01-12', 10000, 'Assigned'),
-(2, 2, '2024-10-28', 200, 'Paid');
+(2, 2, '2024-10-28', 200, 'Paid'),
+(3, 9, '2024-10-31', 20, 'Assigned');
 
 -- --------------------------------------------------------
 
@@ -333,7 +337,10 @@ CREATE TABLE `tblresponse` (
 --
 
 INSERT INTO `tblresponse` (`repId`, `inspId`, `repDate`, `report`, `rating`, `filePath`) VALUES
-(6, 5, '2024-10-26', 'good food ', 5, 'uploads/ros.pdf');
+(6, 5, '2024-10-26', 'good food ', 5, 'uploads/ros.pdf'),
+(7, 6, '2024-10-26', 'good', 5, 'uploads/ros.pdf'),
+(8, 7, '2024-10-26', 'good', 5, 'uploads/ros.pdf'),
+(9, 8, '2024-10-26', 'gooooog', 4, 'uploads/ros.pdf');
 
 -- --------------------------------------------------------
 
@@ -474,7 +481,7 @@ ALTER TABLE `tblfooditems`
 -- AUTO_INCREMENT for table `tblinspection`
 --
 ALTER TABLE `tblinspection`
-  MODIFY `inspId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `inspId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `tblinspector`
@@ -504,7 +511,7 @@ ALTER TABLE `tblorderitems`
 -- AUTO_INCREMENT for table `tblpenalty`
 --
 ALTER TABLE `tblpenalty`
-  MODIFY `penaltyId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `penaltyId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tblpublic`
@@ -522,7 +529,7 @@ ALTER TABLE `tblreply`
 -- AUTO_INCREMENT for table `tblresponse`
 --
 ALTER TABLE `tblresponse`
-  MODIFY `repId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `repId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `tblrestaurant`
