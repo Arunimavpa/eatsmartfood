@@ -12,73 +12,65 @@ $id = $_SESSION['id'];
     <title>Penalty Details</title>
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/bootstrap.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* Global Styles */
         body {
-            background-color: #eafaf1; /* Light green background */
+            background-color: #eafaf1;
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
         }
 
         h2 {
-            color: #27ae60; /* Green heading */
+            color: #27ae60;
             font-weight: bold;
             text-align: center;
             margin-bottom: 20px;
         }
 
-        /* Table Styles */
         #tbl {
-            width: 50%; /* Responsive table width */
+            width: 50%;
             margin: 40px auto;
             border-collapse: collapse;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        th {
-            background-color: #27ae60; /* Green header */
-            color: white;
+        th, td {
             padding: 12px;
-            font-weight: bold;
-        }
-
-        td {
-            padding: 12px;
-            text-align: left;
+            text-align: center;
             color: #34495e;
         }
 
+        th {
+            background-color: #27ae60;
+            color: white;
+        }
+
         tr:nth-child(even) {
-            background-color: #f5f5f5; /* Light background */
+            background-color: #f5f5f5;
         }
 
         tr:nth-child(odd) {
-            background-color: #e8f6f3; /* Light blue background */
+            background-color: #e8f6f3;
         }
 
         tr:hover {
-            background-color: rgba(39, 174, 96, 0.2); /* Hover effect */
-            transition: background 0.3s ease;
+            background-color: rgba(39, 174, 96, 0.2);
         }
 
-        a {
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
             text-decoration: none;
-            color: #3498db;
-            font-weight: bold;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
 
-        a:hover {
-            color: #e74c3c;
-        }
-
-        @media (max-width: 768px) {
-            #tbl {
-                width: 100%; /* Responsive adjustment for smaller screens */
-            }
+        .btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -102,22 +94,27 @@ $id = $_SESSION['id'];
                 if (mysqli_num_rows($result) > 0) {
                 ?>
                     <table id="tbl">
-                        
                         <tr>
-                       
-                            <th>PENALTY</th>
-                            <th>DUE DATE</th>
-                            <th>STATUS</th>
+                            <th>Penalty</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Pay Fine</th>
                         </tr>
-                       
                         <?php
                         while ($row = mysqli_fetch_array($result)) {
                         ?>
                             <tr>
-                                
                                 <td>$<?php echo $row['amt']; ?></td>
                                 <td><?php echo $row['duedate']; ?></td>
                                 <td><?php echo $row['status']; ?></td>
+                                <td>
+                                    <?php if ($row['status'] == 'Assigned') { ?>
+                                        <a href="pay_fine.php?repId=<?php echo $row['repId']; ?>" class="btn">Pay Fine</a>
+                                    
+                                    <?php } else { ?>
+                                        Paid
+                                    <?php } ?>
+                                </td>
                             </tr>
                         <?php } ?>
                     </table>

@@ -125,7 +125,7 @@ $inspId = isset($_GET['id']) ? $_GET['id'] : null; // Get specific inspection ID
                             </td>
                             <td><?php echo $row['blacklist_status'] == '1' ? 'Blacklisted' : 'Not Blacklisted'; ?></td>
                             <td>
-                                <a href="?id=<?php echo $row['inspId']; ?>" class="btn-action">View Report Details</a>
+                            <a href="/eatsmartfood/inspector/view_report_file.php?id=<?php echo $row['repId']; ?>" class="btn-action">Show Report File</a>
                             </td>
                         </tr>
                     <?php } ?>
@@ -138,85 +138,7 @@ $inspId = isset($_GET['id']) ? $_GET['id'] : null; // Get specific inspection ID
             $stmt->close();
             ?>
 
-            <!-- Detailed Inspection Report Section (if inspId is provided) -->
-            <?php if ($inspId): ?>
-                <hr>
-                <h2>Inspection Report Details</h2>
-                <hr>
-                <?php
-                // SQL query to fetch detailed information for a specific inspection
-                $sqlDetail = "SELECT tblinspector.iName, tblrestaurant.rName, tblinspection.inspDate, tblresponse.repDate, 
-                                     tblresponse.report, tblresponse.rating, tblresponse.repId
-                              FROM tblinspection 
-                              JOIN tblinspector ON tblinspection.iId = tblinspector.iId 
-                              JOIN tblrestaurant ON tblinspection.rId = tblrestaurant.rId 
-                              JOIN tblresponse ON tblinspection.inspId = tblresponse.inspId 
-                              WHERE tblinspection.inspId = ?";
-                $stmtDetail = $conn->prepare($sqlDetail);
-                $stmtDetail->bind_param("i", $inspId);
-                $stmtDetail->execute();
-                $resultDetail = $stmtDetail->get_result();
 
-                if ($resultDetail->num_rows > 0) {
-                ?>
-                    <table class="table table-bordered mt-5" id="tbl">
-                        <thead>
-                            <tr>
-                                <th>Food Inspector</th>
-                                <th>Restaurant</th>
-                                <th>Inspection Date</th>
-                                <th>Report Date</th>
-                                <th>Report</th>
-                                <th>Rating</th>
-                                <th>Show Report File</th>
-                                <th>Fine</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($row = $resultDetail->fetch_assoc()) { ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($row['iName']); ?></td>
-                                <td><?php echo htmlspecialchars($row['rName']); ?></td>
-                                <td><?php echo htmlspecialchars($row['inspDate']); ?></td>
-                                <td><?php echo htmlspecialchars($row['repDate']); ?></td>
-                                <td><?php echo htmlspecialchars($row['report']); ?></td>
-                                <td><?php echo htmlspecialchars($row['rating']); ?></td>
-                                <td><a href="/eatsmartfood/inspector/view_report_file.php?id=<?php echo $row['repId']; ?>" class="btn-action">Show Report File</a></td>
-                                <?php
-                                // Fetch penalty details
-                                $penaltyQuery = "SELECT status, amt FROM tblpenalty WHERE repId = ?";
-                                $stmtPenalty = $conn->prepare($penaltyQuery);
-                                $stmtPenalty->bind_param("i", $row['repId']);
-                                $stmtPenalty->execute();
-                                $penaltyResult = $stmtPenalty->get_result();
-                                $penalty = $penaltyResult->fetch_assoc();
-
-                                if ($penalty) {
-                                    echo "<td>{$penalty['amt']}</td>";
-                                    if ($penalty['status'] == 'Assigned') {
-                                        echo "<td>
-                                            <a href='incrementpenalty.php?id={$row['repId']}' class='btn-action'>Add Extra Fine</a>
-                                            <a href='penaltypaid.php?id={$row['repId']}' class='btn-action'>Paid</a> //add code for payment her
-                                        </td>";
-                                    } else {
-                                        echo "<td>No further actions</td>";
-                                    }
-                                } else {
-                                    echo "<td>No Penalty Assigned</td>";
-                                }
-                                ?>
-                            </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                <?php
-                } else {
-                    echo '<h3 class="text-center">No detailed report found for this inspection.</h3>';
-                }
-                $stmtDetail->close();
-                ?>
-            <?php endif; ?>
         </div>
     </center>
 
