@@ -43,6 +43,7 @@ $inspId = $_GET['id'];
                         <th>REPORT DATE</th>
                         <th>REPORT</th>
                         <th>RATING</th>
+                        <th>REPORT FILE</th>
                         <th></th>
                     </tr>
                     <?php
@@ -56,6 +57,9 @@ $inspId = $_GET['id'];
                             <td><?php echo $row['repDate']; ?></td>
                             <td><?php echo $row['report']; ?></td>
                             <td><?php echo $row['rating']; ?></td>
+                            <td>
+                            <a href="/eatsmartfood/inspector/view_report_file.php?id=<?php echo $row['repId']; ?>" class="btn-action">Show Report File</a>
+                            </td>
                         </tr>
                     <?php } ?>
                 </table>

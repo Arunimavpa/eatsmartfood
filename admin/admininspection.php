@@ -173,10 +173,15 @@ include '../connection.php';
     <div class="table-card">
         <h2>Inspection Requests</h2>
         <?php
-        $sql = "SELECT * FROM tblinspection 
-                JOIN tblinspector ON tblinspector.iId = tblinspection.iId 
-                JOIN tblrestaurant ON tblrestaurant.rId = tblinspection.rId 
-                WHERE tblinspector.iEmail IN (SELECT username FROM tbllogin WHERE status='1')";
+        
+        $sql = "SELECT tblinspection.inspId, tblinspector.iName, tblrestaurant.rName, tblinspection.inspDate, tblinspection.inspRequest, tblpenalty.status AS penalty_status
+            FROM tblinspection 
+            JOIN tblinspector ON tblinspector.iId = tblinspection.iId 
+            JOIN tblrestaurant ON tblrestaurant.rId = tblinspection.rId 
+            LEFT JOIN tblresponse ON tblinspection.inspId = tblresponse.inspId 
+            LEFT JOIN tblpenalty ON tblresponse.repId = tblpenalty.repId
+            WHERE tblinspector.iEmail IN (SELECT username FROM tbllogin WHERE status='1')";
+
         $result = mysqli_query($conn, $sql);
         if (mysqli_num_rows($result) > 0) {
         ?>
@@ -197,6 +202,7 @@ include '../connection.php';
                         <td>' . $row['inspDate'] . '</td>
                         <td>' . $row['inspRequest'] . '</td>
                         <td><a href="admininspectionreport.php?id=' . $row['inspId'] . '">View report</a></td>
+                        <td>' . ($row['penalty_status'] ?? 'No Penalty') . '</td>
                       </tr>';
             }
             ?>
